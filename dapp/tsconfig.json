@@ -1,0 +1,13 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "ts",
+		"outDir": "js",
+		"plugins": [ { "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js", "after": true, } ],
+		"noEmit": false,
+		"lib": ["DOM"]
+	},
+	"include": [
+		"ts/**/*.ts"
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"module": "ES2015",
+		"target": "ESNext",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"inlineSources": true,
+		"declaration": true,
+		"noEmit": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+	}
+}
