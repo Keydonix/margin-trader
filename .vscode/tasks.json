@@ -16,6 +16,40 @@
 				"--renew-anon-volumes"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "dapp - watch",
+			"type": "npm",
+			"script": "watch-dapp",
+			"group": "none",
+			"problemMatcher": [ "$tsc-watch" ],
+			"isBackground": true,
+		},
+		{
+			"label": "dapp - serve",
+			"type": "npm",
+			"script": "serve-dapp",
+			"group": "none",
+			"dependsOn": "",
+			"problemMatcher": [],
+			"isBackground": true,
+		},
+		{
+			"label": "dapp - watch & serve",
+			"dependsOn": [
+				"dapp - watch",
+				"dapp - serve",
+			],
+			"problemMatcher": [],
+		},
+		{
+			"label": "all the things",
+			"dependsOn": [
+				"docker-compose",
+				"dapp - watch",
+				"dapp - serve",
+			],
+			"problemMatcher": [],
 		}
 	]
 }

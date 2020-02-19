@@ -4,6 +4,8 @@
 		"@types/jasmine": "3.4.4",
 		"@types/node": "13.7.2",
 		"@types/node-fetch": "2.5.4",
+		"@types/react": "16.9.20",
+		"@types/react-dom": "16.9.5",
 		"@zoltu/file-copier": "2.2.1",
 		"@zoltu/solidity-typescript-generator": "3.0.2",
 		"@zoltu/typescript-transformer-append-js-extension": "1.0.1",
@@ -18,7 +20,9 @@
 		"build-contracts": "ts-node --project scripts/tsconfig.json scripts/compile-contracts.ts",
 		"vendor": "ts-node --project scripts/tsconfig.json scripts/vendor.ts",
 		"build-dapp": "ttsc --project dapp/tsconfig.json",
-		"test": "ts-node --project test/tsconfig.json test/index.ts"
+		"watch-dapp": "ttsc --project dapp/tsconfig.json --watch",
+		"test": "ts-node --project test/tsconfig.json test/index.ts",
+		"serve-dapp": "npx http-server dapp"
 	},
 	"dependencies": {
 		"@zoltu/ethereum-abi-encoder": "3.2.2",

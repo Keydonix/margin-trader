@@ -3,11 +3,15 @@
 	"compilerOptions": {
 		"rootDir": "ts",
 		"outDir": "js",
+		// remove when https://github.com/facebook/react/issues/17352 is fixed
+		"allowUmdGlobalAccess": true,
+		"jsx": "react",
 		"plugins": [ { "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js", "after": true, } ],
 		"noEmit": false,
 		"lib": ["DOM"]
 	},
 	"include": [
-		"ts/**/*.ts"
+		"ts/**/*.ts",
+		"ts/**/*.tsx",
 	]
 }

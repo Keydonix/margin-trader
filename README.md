@@ -23,4 +23,8 @@ Debug > Start Debugging
 ```
 
 ## Run
-_TODO_
+### VSCode
+```
+Terminal > Run Task > all the things
+TODO: script for deploying contracts to all three test nodes, for now you can just run the tests once against the target node.
+```
