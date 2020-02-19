@@ -14,7 +14,8 @@
 			"args": [ "${workspaceFolder}/test/index.ts", ],
 			"env": {
 				"TS_NODE_PROJECT": "${workspaceFolder}/test/tsconfig.json",
-			}
+			},
+			"outputCapture": "std",
 		}
 	]
 }
