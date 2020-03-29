@@ -2,9 +2,9 @@
 
 <head>
 	<meta charset='utf-8'>
-	<link rel='stylesheet' href='./css/index.css'>
+	<link rel='stylesheet' href='./stylesheets/index.css'>
 </head>
-<body style='margin: 0;'>
+	<body>
 	<!-- turn these into `import 'react'` once https://github.com/facebook/react/issues/17352 is fixed -->
 	<script src='./vendor/react/react.production.min.js'></script>
 	<script src='./vendor/react-dom/react-dom.production.min.js'></script>
@@ -12,13 +12,14 @@
 	<script type='importmap-shim'>
 		{
 			"imports": {
+				"react": "./vendor/@pika/react/source.development.js",
+				"react-dom": "./vendor/@pika/react-dom/source.development.js",
 				"@zoltu/ethereum-abi-encoder": "./vendor/@zoltu/ethereum-abi-encoder/index.js",
 				"@zoltu/ethereum-crypto": "./vendor/@zoltu/ethereum-crypto/index.js",
 				"@zoltu/ethereum-fetch-json-rpc": "./vendor/@zoltu/ethereum-fetch-json-rpc/index.js",
 				"@zoltu/ethereum-types": "./vendor/@zoltu/ethereum-types/index.js",
 				"es-module-shims": "./vendor/es-module-shims/es-module-shims.min.js",
-				"react": "./vendor/react/react.production.min.js",
-				"react-dom": "./vendor/react-dom/react-dom.production.min.js"
+				"react-toasts": "./vendor/react-toasts/index.js"
 			}
 		}
 	</script>

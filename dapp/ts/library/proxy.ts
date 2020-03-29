@@ -2,6 +2,7 @@ export function createOnChangeProxy<T extends object>(onChange: () => void, targ
 	for (const key in target) {
 		const item = target[key]
 		if (!isMutableObject(item)) continue
+		// TODO: figure out how to handle promises, they seem to be special
 		target[key] = createOnChangeProxy(onChange, item)
 	}
 	return new Proxy<T>(target, createProxyHandler(onChange))

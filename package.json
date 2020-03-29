@@ -4,8 +4,8 @@
 		"@types/jasmine": "3.4.4",
 		"@types/node": "13.7.2",
 		"@types/node-fetch": "2.5.4",
-		"@types/react": "16.9.22",
-		"@types/react-dom": "16.9.5",
+		"@types/react": "16.9.34",
+		"@types/react-dom": "16.9.7",
 		"@zoltu/file-copier": "2.2.1",
 		"@zoltu/rlp-encoder": "2.0.0",
 		"@zoltu/solidity-typescript-generator": "3.1.0",
@@ -13,9 +13,9 @@
 		"jasmine": "3.5.0",
 		"node-fetch": "2.6.0",
 		"solc": "0.6.3",
-		"ts-node": "8.6.2",
+		"ts-node": "8.10.1",
 		"ttypescript": "1.5.10",
-		"typescript": "3.8.2"
+		"typescript": "3.8.3"
 	},
 	"scripts": {
 		"build-contracts": "ts-node --project scripts/tsconfig.json scripts/compile-contracts.ts",
@@ -26,12 +26,14 @@
 		"serve-dapp": "npx http-server dapp"
 	},
 	"dependencies": {
+		"@pika/react": "16.13.1",
+		"@pika/react-dom": "16.13.1",
 		"@zoltu/ethereum-abi-encoder": "4.0.0",
 		"@zoltu/ethereum-crypto": "2.1.1",
 		"@zoltu/ethereum-fetch-json-rpc": "12.2.2",
 		"@zoltu/ethereum-types": "8.4.2",
 		"es-module-shims": "0.4.6",
-		"react": "16.12.0",
-		"react-dom": "16.12.0"
+		"react": "16.13.1",
+		"react-dom": "16.13.1"
 	}
 }

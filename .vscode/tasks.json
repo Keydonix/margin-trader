@@ -6,7 +6,7 @@
 		{
 			"label": "docker-compose",
 			"type": "process",
-			"command": "docker-compose",
+			"command": "docker-compose.exe",
 			"args": [
 				"up",
 				"--force-recreate",
