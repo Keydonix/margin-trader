@@ -21,6 +21,8 @@ async function compileContracts(): Promise<[CompilerInput, CompilerOutput]> {
 		'MerklePatritiaVerifier.sol',
 		'Rlp.sol',
 		'Test.sol',
+		'UniswapOracle.sol',
+		'IUniswapV2Pair.sol',
 	]
 
 	for (const filenameOrSource of filenamesOrSources) {
