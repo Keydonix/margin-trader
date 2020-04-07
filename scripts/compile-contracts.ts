@@ -14,8 +14,20 @@ export async function ensureDirectoryExists(absoluteDirectoryPath: string) {
 }
 
 async function compileContracts(): Promise<[CompilerInput, CompilerOutput]> {
-	const solidityFilePath = path.join(__dirname, '..', 'contracts', 'source', 'margin-trader.sol')
-	const soliditySourceCode = await filesystem.readFile(solidityFilePath, 'utf8')
+	let sources: Record<string, { content: string }> = {}
+	const filenamesOrSources = [
+		'BlockVerifier.sol',
+		'MarginTrader.sol',
+		'MerklePatritiaVerifier.sol',
+		'Rlp.sol',
+		'Test.sol',
+	]
+
+	for (const filenameOrSource of filenamesOrSources) {
+		const absolutePath = resolveRelativeContractPath(filenameOrSource)
+		const content = await filesystem.readFile(absolutePath, 'utf8')
+		sources[filenameOrSource] = { content }
+	}
 	const compilerInput: CompilerInput = {
 		language: "Solidity",
 		settings: {
@@ -29,11 +41,7 @@ async function compileContracts(): Promise<[CompilerInput, CompilerOutput]> {
 				}
 			}
 		},
-		sources: {
-			'margin-trader.sol': {
-				content: soliditySourceCode
-			}
-		}
+		sources,
 	}
 	const compilerInputJson = JSON.stringify(compilerInput)
 	const compilerOutputJson = compile(compilerInputJson)
@@ -52,6 +60,10 @@ async function compileContracts(): Promise<[CompilerInput, CompilerOutput]> {
 	}
 
 	return [compilerInput, compilerOutput]
+}
+
+function resolveRelativeContractPath(fileName: string) {
+	return path.join(__dirname, '..', 'contracts', 'source', fileName);
 }
 
 async function writeCompilerInput(input: CompilerInput) {
@@ -96,7 +108,7 @@ async function writeBytecode(contracts: CompilerOutputContractFile) {
 
 async function doStuff() {
 	const [compilerInput, compilerOutput] = await compileContracts()
-	const contracts = compilerOutput.contracts['margin-trader.sol']
+	const contracts = compilerOutput.contracts['MarginTrader.sol']
 	await writeCompilerInput(compilerInput)
 	await writeCompilerOutput(compilerOutput)
 	await writeJson(contracts.MarginTrader.abi)
