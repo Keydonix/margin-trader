@@ -1,5 +1,4 @@
 pragma solidity 0.6.3;
-pragma experimental ABIEncoderV2;
 
 import { BlockVerifier } from "./BlockVerifier.sol";
 import { MerklePatritiaVerifier } from "./MerklePatritiaVerifier.sol";
