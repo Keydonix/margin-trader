@@ -1,9 +1,11 @@
 pragma solidity 0.6.3;
 
-contract IUniswapV2Pair {
-    address public token0;
-    address public token1;
+interface IUniswapV2Pair {
+    function token0() external view returns (address);
+    function token1() external view returns (address);
 
-    uint public price0CumulativeLast;
-    uint public price1CumulativeLast;
+    function price0CumulativeLast() external view returns (uint256);
+    function price1CumulativeLast() external view returns (uint256);
+
+	function getReserves() external view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast);
 }
