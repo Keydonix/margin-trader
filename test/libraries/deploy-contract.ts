@@ -5,9 +5,9 @@ import { keccak256 } from '@zoltu/ethereum-crypto'
 import { SignerFetchRpc } from './rpc-factories'
 import { encodeParameters } from "@zoltu/ethereum-abi-encoder";
 
-const proxyDeployerAddress = 0x7a0d94f55792c434d74a40883c6ed8545e406d12n
+export const proxyDeployerAddress = 0x7a0d94f55792c434d74a40883c6ed8545e406d12n
 
-async function ensureProxyDeployerDeployed(rpc: SignerFetchRpc): Promise<void> {
+export async function ensureProxyDeployerDeployed(rpc: SignerFetchRpc): Promise<void> {
 	const deployerBytecode = await rpc.getCode(proxyDeployerAddress)
 	if (deployerBytecode.equals(Bytes.fromHexString('0x60003681823780368234f58015156014578182fd5b80825250506014600cf3'))) return
 
@@ -20,12 +20,12 @@ export async function deploy(rpc: SignerFetchRpc, fileName: string, contractName
 
 	const deploymentBytecode = await getDeploymentBytecode(fileName, contractName, constructorParameterTypes, constructorParameters)
 	const expectedDeployedBytecode = await getDeployedBytecode(fileName, contractName)
-	const marginTraderAddress = await getDeploymentAddress(fileName, contractName, constructorParameterTypes, constructorParameters)
-	const deployedBytecode = await rpc.getCode(marginTraderAddress)
-	if (deployedBytecode.equals(expectedDeployedBytecode)) return marginTraderAddress
+	const address = await getDeploymentAddress(deploymentBytecode)
+	const deployedBytecode = await rpc.getCode(address)
+	if (deployedBytecode.equals(expectedDeployedBytecode)) return address
 
 	await rpc.sendTransaction({ to: proxyDeployerAddress, data: deploymentBytecode })
-	return marginTraderAddress
+	return address
 }
 
 async function getDeploymentBytecode(fileName: string, contractName: string, constructorParameterTypes: string[], constructorParameters: EncodableArray) {
@@ -41,8 +41,7 @@ async function getDeployedBytecode(fileName: string, contractName: string) {
 	return Bytes.fromHexString(deployedBytecodeString)
 }
 
-async function getDeploymentAddress(fileName: string, contractName: string, constructorParameterTypes: string[] = [], constructorParameters: EncodableArray = []) {
-	const deploymentBytecode = await getDeploymentBytecode(fileName, contractName, constructorParameterTypes, constructorParameters)
+export async function getDeploymentAddress(deploymentBytecode: Bytes) {
 	const salt = 0n
 	const deploymentBytecodeHash = await keccak256.hash(deploymentBytecode)
 	return await keccak256.hash([0xff, ...Bytes.fromUnsignedInteger(proxyDeployerAddress, 160), ...Bytes.fromUnsignedInteger(salt, 256), ...Bytes.fromUnsignedInteger(deploymentBytecodeHash, 256)]) & 0xffffffffffffffffffffffffffffffffffffffffn

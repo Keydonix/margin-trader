@@ -13,6 +13,7 @@ import { createMemoryRpc } from './libraries/rpc-factories'
 import { deploy } from './libraries/deploy-contract'
 import { DependenciesImpl } from './libraries/dependencies'
 import { Test, UniswapOracle } from './generated/margin-trader'
+import { deployUniswap } from "./libraries/deploy-uniswap";
 
 const jsonRpcEndpoint = 'http://localhost:1237'
 const gasPrice = 10n*8n
@@ -140,7 +141,9 @@ it('block to storage', async () => {
 it('UniswapOracle on-chain hashes', async () => {
 	// setup
 	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
-	const uniswapContractAddress = 123456789n // TODO: deploy uniswap, fetch hash from UniswapOracle, fetch real storage value
+	const uniswapFactoryContractAddress = await deployUniswap(rpc)
+	// const uniswapFactoryContract = new IUniswapV2Factory(uniswapFactoryContractAddress)
+	const uniswapContractAddress = uniswapFactoryContractAddress // TODO: hack
 	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContractAddress, 160))
 
 	const testContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address"], [uniswapContractAddress])
