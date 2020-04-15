@@ -10,8 +10,8 @@ contract UniswapOracle {
 	using UQ112x112 for uint224;
 
 	uint256 private constant MIN_BLOCK_COUNT = 192;
-	bytes32 private constant reserveTimestampSlotHash = keccak256(abi.encodePacked(uint256(8)));
-	bytes32 private constant price0SlotHash = keccak256(abi.encodePacked(uint256(9)));
+	bytes32 public constant reserveTimestampSlotHash = keccak256(abi.encodePacked(uint256(8)));
+	bytes32 public constant price0SlotHash = keccak256(abi.encodePacked(uint256(9)));
 
 	IUniswapV2Pair public uniswapV2Pair;
 	bytes32 public uniswapV2PairHash;
@@ -21,7 +21,7 @@ contract UniswapOracle {
 		uniswapV2PairHash = keccak256(abi.encodePacked(_uniswapV2Pair));
 	}
 
-	function getBlockStateRoot(bytes memory historicBlock, bytes memory accountNodesRlp) public view returns (bytes32 storageRootHash, uint256 blockTimestamp) {
+	function getAccountStorageRoot(bytes memory historicBlock, bytes memory accountNodesRlp) public view returns (bytes32 storageRootHash, uint256 blockTimestamp) {
 		bytes32 stateRoot;
 		uint256 blockNumber;
 		(stateRoot, blockTimestamp, blockNumber) = BlockVerifier.extractStateRootAndTimestamp(historicBlock);
@@ -36,7 +36,7 @@ contract UniswapOracle {
 	function verifyBlockAndExtractReserveData(bytes memory historicBlock, bytes memory accountNodesRlp, bytes memory reserveTimestampProofNodesRlp, bytes memory price0ProofNodesRlp) public view returns
 		(uint256 blockTimestamp, uint256 price0CumulativeLast, uint112 reserve0, uint112 reserve1, uint256 reserveTimestamp) {
 		bytes32 storageRootHash;
-		(storageRootHash, blockTimestamp) = getBlockStateRoot(historicBlock, accountNodesRlp);
+		(storageRootHash, blockTimestamp) = getAccountStorageRoot(historicBlock, accountNodesRlp);
 		price0CumulativeLast = bytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, reserveTimestampSlotHash, reserveTimestampProofNodesRlp));
 		uint256 reserve0Reserve1TimestampPacked = bytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, price0SlotHash, price0ProofNodesRlp));
 		reserve0 = uint112(reserve0Reserve1TimestampPacked >> (112+32));

@@ -12,7 +12,7 @@ import { stripLeadingZeros } from './libraries/utils'
 import { createMemoryRpc } from './libraries/rpc-factories'
 import { deploy } from './libraries/deploy-contract'
 import { DependenciesImpl } from './libraries/dependencies'
-import { Test, UniswapOracle } from './generated/margin-trader'
+import { Test } from './generated/margin-trader'
 
 const jsonRpcEndpoint = 'http://localhost:1237'
 const gasPrice = 10n*8n
@@ -135,28 +135,7 @@ it('block to storage', async () => {
 	const storedValue = Bytes.fromByteArray(rlpDecode(storedValueRlp) as Uint8Array)
 	const expectedValue = Bytes.fromByteArray([...Bytes.fromUnsignedInteger(11, 32), ...Bytes.fromUnsignedInteger(7, 112), ...Bytes.fromUnsignedInteger(5, 112)]).toUnsignedBigint()
 	expect(storedValue.toUnsignedBigint()).toEqual(expectedValue)
-})
-
-it('UniswapOracle on-chain hashes', async () => {
-	// setup
-	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
-	const uniswapContractAddress = 123456789n // TODO: deploy uniswap, fetch hash from UniswapOracle, fetch real storage value
-	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContractAddress, 160))
-
-	const testContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address"], [uniswapContractAddress])
-	const testContract = new UniswapOracle(new DependenciesImpl(rpc), testContractAddress)
-
-	// check hash created in constructor
-	const storedUniswapContractAddressHash = await testContract.uniswapV2PairHash_()
-	expect(storedUniswapContractAddressHash).toEqual(uniswapContractAddressHash)
-
-	// check constant hashes
-	const constantReserveTimestampSlotHash = await testContract.reserveTimestampSlotHash_()
-	expect(constantReserveTimestampSlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(8n, 256)))
-
-	const constantPrice0SlotHash = await testContract.price0SlotHash_()
-	expect(constantPrice0SlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(9n, 256)))
-})
+}, 999999)
 
 jasmine.execute()
 
