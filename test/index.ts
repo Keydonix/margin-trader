@@ -13,6 +13,7 @@ import { createMemoryRpc } from './libraries/rpc-factories'
 import { deploy } from './libraries/deploy-contract'
 import { DependenciesImpl } from './libraries/dependencies'
 import { Test, UniswapOracle } from './generated/margin-trader'
+import { UniswapV2Factory } from './generated/uniswap'
 import { deployUniswap } from "./libraries/deploy-uniswap";
 
 const jsonRpcEndpoint = 'http://localhost:1237'
@@ -142,8 +143,18 @@ it('UniswapOracle on-chain hashes', async () => {
 	// setup
 	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
 	const uniswapFactoryContractAddress = await deployUniswap(rpc)
-	// const uniswapFactoryContract = new IUniswapV2Factory(uniswapFactoryContractAddress)
-	const uniswapContractAddress = uniswapFactoryContractAddress // TODO: hack
+	const uniswapFactoryContract = new UniswapV2Factory(new DependenciesImpl(rpc), uniswapFactoryContractAddress)
+
+	// TODO: proper symbol
+	const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([1])])
+	const token1 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([2])])
+	let uniswapContractAddress  = await uniswapFactoryContract.getPair_(token0, token1);
+	if (uniswapContractAddress === 0n) {
+		await uniswapFactoryContract.createPair(token0, token1)
+		uniswapContractAddress  = await uniswapFactoryContract.getPair_(token0, token1);
+	}
+	// check deploy once we have v2pair abi
+
 	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContractAddress, 160))
 
 	const testContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address"], [uniswapContractAddress])

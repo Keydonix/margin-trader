@@ -1,6 +1,6 @@
 pragma solidity 0.6.3;
 
-contract ERC20 {
+contract TestERC20 {
 	event Transfer(address indexed from, address indexed to, uint256 value);
 	event Approval(address indexed owner, address indexed spender, uint256 value);
 	mapping (address => uint256) public balanceOf;
