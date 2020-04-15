@@ -9,11 +9,11 @@ import { Bytes, Block } from '@zoltu/ethereum-types'
 import { rlpEncode, rlpDecode } from '@zoltu/rlp-encoder'
 import { keccak256 } from '@zoltu/ethereum-crypto'
 import { stripLeadingZeros } from './libraries/utils'
-import { createMemoryRpc } from './libraries/rpc-factories'
+import { createMemoryRpc, SignerFetchRpc } from './libraries/rpc-factories'
 import { deploy } from './libraries/deploy-contract'
 import { DependenciesImpl } from './libraries/dependencies'
-import { Test, UniswapOracle } from './generated/margin-trader'
-import { UniswapV2Factory } from './generated/uniswap'
+import { Test, TestERC20, UniswapOracle } from './generated/margin-trader'
+import { UniswapV2Factory, UniswapV2Pair } from './generated/uniswap'
 import { deployUniswap } from "./libraries/deploy-uniswap";
 
 const jsonRpcEndpoint = 'http://localhost:1237'
@@ -142,33 +142,30 @@ it('block to storage', async () => {
 it('UniswapOracle on-chain hashes', async () => {
 	// setup
 	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
-	const uniswapFactoryContractAddress = await deployUniswap(rpc)
-	const uniswapFactoryContract = new UniswapV2Factory(new DependenciesImpl(rpc), uniswapFactoryContractAddress)
+	const {uniswapContract} = await createUniswap(rpc)
 
-	// TODO: proper symbol
-	const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([1])])
-	const token1 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([2])])
-	let uniswapContractAddress  = await uniswapFactoryContract.getPair_(token0, token1);
-	if (uniswapContractAddress === 0n) {
-		await uniswapFactoryContract.createPair(token0, token1)
-		uniswapContractAddress  = await uniswapFactoryContract.getPair_(token0, token1);
-	}
-	// check deploy once we have v2pair abi
+	let balance = await uniswapContract.balanceOf_(await rpc.addressProvider());
+	console.log(balance)
 
-	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContractAddress, 160))
+	let cum = await uniswapContract.price0CumulativeLast_();
+	console.log(cum)
 
-	const testContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address"], [uniswapContractAddress])
-	const testContract = new UniswapOracle(new DependenciesImpl(rpc), testContractAddress)
+		// check deploy once we have v2pair abi
+
+	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContract.address, 160))
+
+	const uniswapOracleContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address", "uint256"], [uniswapContract.address, BigInt(Date.now()) ])
+	const uniswapOracleContract = new UniswapOracle(new DependenciesImpl(rpc), uniswapOracleContractAddress)
 
 	// check hash created in constructor
-	const storedUniswapContractAddressHash = await testContract.uniswapV2PairHash_()
+	const storedUniswapContractAddressHash = await uniswapOracleContract.uniswapV2PairHash_()
 	expect(storedUniswapContractAddressHash).toEqual(uniswapContractAddressHash)
 
 	// check constant hashes
-	const constantReserveTimestampSlotHash = await testContract.reserveTimestampSlotHash_()
+	const constantReserveTimestampSlotHash = await uniswapOracleContract.reserveTimestampSlotHash_()
 	expect(constantReserveTimestampSlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(8n, 256)))
 
-	const constantPrice0SlotHash = await testContract.price0SlotHash_()
+	const constantPrice0SlotHash = await uniswapOracleContract.price0SlotHash_()
 	expect(constantPrice0SlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(9n, 256)))
 })
 
@@ -192,4 +189,40 @@ function rlpEncodeBlock(block: Block) {
 		Bytes.fromUnsignedInteger(block.mixHash, 256),
 		Bytes.fromUnsignedInteger(block.nonce!, 64),
 	])
+}
+
+async function createUniswap(rpc: SignerFetchRpc) {
+	const uniswapFactoryContractAddress = await deployUniswap(rpc)
+	const uniswapFactoryContract = new UniswapV2Factory(new DependenciesImpl(rpc), uniswapFactoryContractAddress)
+
+	// TODO: proper symbol
+	// const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([1])])
+	const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new TextEncoder().encode("DAI-" + Date.now())])
+	const token1 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new TextEncoder().encode("WETH-" + Date.now())])
+	const token0Contract = new TestERC20(new DependenciesImpl(rpc), token0)
+	const token1Contract = new TestERC20(new DependenciesImpl(rpc), token1)
+
+
+	let uniswapContractAddress = await uniswapFactoryContract.getPair_(token0, token1);
+	if (uniswapContractAddress === 0n) {
+		await uniswapFactoryContract.createPair(token0, token1)
+		uniswapContractAddress = await uniswapFactoryContract.getPair_(token0, token1);
+	}
+	const uniswapContract = new UniswapV2Pair(new DependenciesImpl(rpc), uniswapContractAddress)
+
+	await token0Contract.mint(2000000000000000000n)
+	await token1Contract.mint(2000000000000000000n)
+
+	await token0Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await token1Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await uniswapContract.mint(await rpc.addressProvider())
+
+	// TODO Ganache
+	await new Promise((resolve) => setTimeout(resolve, 1000))
+	await token0Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await token1Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await uniswapContract.mint(await rpc.addressProvider())
+
+
+	return {token0Contract, token1Contract, uniswapContract};
 }

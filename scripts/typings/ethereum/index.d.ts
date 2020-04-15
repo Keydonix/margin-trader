@@ -1,5 +1,5 @@
 declare module 'ethereum' {
-	export type Primitive = 'uint8' | 'uint64' | 'uint256' | 'bool' | 'string' | 'address' | 'bytes20' | 'bytes32' | 'bytes' | 'int256' | 'tuple' | 'address[]' | 'uint256[]' | 'bytes32[]' | 'tuple[]'
+	export type Primitive = 'uint8' | 'uint32' | 'uint64' | 'uint112' | 'uint256' | 'bool' | 'string' | 'address' | 'bytes20' | 'bytes32' | 'bytes' | 'int256' | 'tuple' | 'address[]' | 'uint256[]' | 'bytes32[]' | 'tuple[]'
 
 	export interface AbiParameter {
 		readonly name: string
