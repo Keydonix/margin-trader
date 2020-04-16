@@ -32,8 +32,7 @@ contract UniswapOracle {
 		return (Rlp.toBytes32(accountDetails[2]), blockTimestamp);
 	}
 
-	// This function verifies the full block is old enough (MIN_BLOCK_COUNT), not too old (or blockhash will return 0x0)
-	// and return the proof values for the two storage slots we care about
+	// This function verifies the full block is old enough (MIN_BLOCK_COUNT), not too old (or blockhash will return 0x0) and return the proof values for the two storage slots we care about
 	function verifyBlockAndExtractReserveData(bytes memory historicBlock, bytes memory accountNodesRlp, bytes memory reserveTimestampProofNodesRlp, bytes memory price0ProofNodesRlp) public view returns
 		(uint256 blockTimestamp, uint256 price0CumulativeLast, uint112 reserve0, uint112 reserve1, uint256 reserveTimestamp) {
 		bytes32 storageRootHash;
