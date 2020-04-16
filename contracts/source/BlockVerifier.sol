@@ -1,7 +1,7 @@
 pragma solidity 0.6.3;
 
 library BlockVerifier {
-	function extractStateRootAndTimestamp(bytes memory) internal view returns (bytes32 stateRoot, uint256 blockTimestamp) {
+	function extractStateRootAndTimestamp(bytes memory) internal view returns (bytes32 stateRoot, uint256 blockTimestamp, uint256 blockNumber) {
 		assembly {
 			function revertWithReason(message, length) {
 				mstore(0, 0x08c379a000000000000000000000000000000000000000000000000000000000)
@@ -64,7 +64,7 @@ library BlockVerifier {
 			let timestampPrefixPointer := add(gasUsedPointer, gasUsedLength)
 			let timestampPointer, timestampLength := readDynamic(timestampPrefixPointer)
 
-			let blockNumber := shr(sub(256, mul(blockNumberLength, 8)), mload(blockNumberPointer))
+			blockNumber := shr(sub(256, mul(blockNumberLength, 8)), mload(blockNumberPointer))
 			let blockHash := blockhash(blockNumber)
 			if iszero(eq(blockHash, rlpHash)) { revertWithReason("blockHash != rlpHash", 20) }
 
