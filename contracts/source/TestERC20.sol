@@ -6,10 +6,12 @@ contract TestERC20 {
 	mapping (address => uint256) public balanceOf;
 	mapping (address => mapping (address => uint256)) public allowance;
 	uint256 public totalSupply;
-	bytes public symbol;
+	string public symbol;
+	string public name;
 
-	constructor(bytes memory _symbol) public {
+	constructor(string memory _symbol, string memory _name) public {
 		symbol = _symbol;
+		name = _name;
 	}
 	function kill() public {
 		selfdestruct(msg.sender);

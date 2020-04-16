@@ -204,10 +204,8 @@ async function createUniswap(rpc: SignerFetchRpc) {
 	const uniswapFactoryContractAddress = await deployUniswap(rpc)
 	const uniswapFactoryContract = new UniswapV2Factory(new DependenciesImpl(rpc), uniswapFactoryContractAddress)
 
-	// TODO: proper symbol
-	// const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new Uint8Array([1])])
-	const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new TextEncoder().encode("DAI-" + Date.now())])
-	const token1 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["bytes"], [new TextEncoder().encode("WETH-" + Date.now())])
+	const token0 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["string", "string"], ["DAI-" + Date.now(), "DAI"])
+	const token1 = await deploy(rpc, 'TestERC20.sol', 'TestERC20', ["string", "string"], ["WETH-" + Date.now(), "WETH"])
 	const token0Contract = new TestERC20(new DependenciesImpl(rpc), token0)
 	const token1Contract = new TestERC20(new DependenciesImpl(rpc), token1)
 
