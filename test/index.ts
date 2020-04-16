@@ -154,7 +154,8 @@ it('UniswapOracle on-chain hashes', async () => {
 
 	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContract.address, 160))
 
-	const uniswapOracleContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address", "uint256"], [uniswapContract.address, BigInt(Date.now()) ])
+	// Date is on there for a nonce, is never read by EVM, but
+	const uniswapOracleContractAddress = await deploy(rpc, 'UniswapOracle.sol', 'UniswapOracle', ["address", "uint256", "uint256"], [uniswapContract.address, 1n, BigInt(Date.now()) ])
 	const uniswapOracleContract = new UniswapOracle(new DependenciesImpl(rpc), uniswapOracleContractAddress)
 
 	// check hash created in constructor
@@ -218,19 +219,18 @@ async function createUniswap(rpc: SignerFetchRpc) {
 	}
 	const uniswapContract = new UniswapV2Pair(new DependenciesImpl(rpc), uniswapContractAddress)
 
-	await token0Contract.mint(2000000000000000000n)
+	await token0Contract.mint(1800000000000000000n)
 	await token1Contract.mint(2000000000000000000n)
 
-	await token0Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await token0Contract.transfer(uniswapContractAddress, 900000000000000000n)
 	await token1Contract.transfer(uniswapContractAddress, 1000000000000000000n)
 	await uniswapContract.mint(await rpc.addressProvider())
 
 	// TODO Ganache
 	await new Promise((resolve) => setTimeout(resolve, 1000))
-	await token0Contract.transfer(uniswapContractAddress, 1000000000000000000n)
+	await token0Contract.transfer(uniswapContractAddress, 900000000000000000n)
 	await token1Contract.transfer(uniswapContractAddress, 1000000000000000000n)
 	await uniswapContract.mint(await rpc.addressProvider())
-
 
 	return {token0Contract, token1Contract, uniswapContract};
 }

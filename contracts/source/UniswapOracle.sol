@@ -9,14 +9,15 @@ import { UQ112x112 } from "./UQ112x112.sol";
 contract UniswapOracle {
 	using UQ112x112 for uint224;
 
-	uint256 private constant MIN_BLOCK_COUNT = 1;
+	uint256 private MIN_BLOCK_COUNT;
 	bytes32 public constant reserveTimestampSlotHash = keccak256(abi.encodePacked(uint256(8)));
 	bytes32 public constant price0SlotHash = keccak256(abi.encodePacked(uint256(9)));
 
 	IUniswapV2Pair public uniswapV2Pair;
 	bytes32 public uniswapV2PairHash;
 
-	constructor(IUniswapV2Pair _uniswapV2Pair) public {
+	constructor(IUniswapV2Pair _uniswapV2Pair, uint256 minBlockCount) public {
+		MIN_BLOCK_COUNT = minBlockCount;
 		uniswapV2Pair = _uniswapV2Pair;
 		uniswapV2PairHash = keccak256(abi.encodePacked(_uniswapV2Pair));
 	}
@@ -65,7 +66,7 @@ contract UniswapOracle {
 	}
 
 	function rlpBytesToUint256(bytes memory source) internal pure returns (uint256 result) {
-		// an extra nibble is in there for the rlp encoding
+		// an extra byte is in there for the rlp encoding
 		assembly {
 			result := mload(add(source, 33))
 		}
