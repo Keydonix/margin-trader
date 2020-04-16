@@ -144,13 +144,13 @@ it('UniswapOracle on-chain hashes', async () => {
 	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
 	const {uniswapContract} = await createUniswap(rpc)
 
-	let balance = await uniswapContract.balanceOf_(await rpc.addressProvider());
-	console.log(balance)
-
-	let cum = await uniswapContract.price0CumulativeLast_();
-	console.log(cum)
-
-		// check deploy once we have v2pair abi
+	// get the block
+	const block = await rpc.getBlockByNumber(false, 'latest')
+	if (block === null) throw new Error(`received null latest block from node`)
+	// execute a transaction on-chain to force a block minted after the one we just fetched, so blockhash(block.number) works.
+	await new Promise(resolve => setTimeout(resolve, 1000))
+	await rpc.sendEth(await rpc.addressProvider(), 0n)
+	const rlpBlock = rlpEncodeBlock(block)
 
 	const uniswapContractAddressHash = await keccak256.hash(Bytes.fromUnsignedInteger(uniswapContract.address, 160))
 
@@ -161,12 +161,20 @@ it('UniswapOracle on-chain hashes', async () => {
 	const storedUniswapContractAddressHash = await uniswapOracleContract.uniswapV2PairHash_()
 	expect(storedUniswapContractAddressHash).toEqual(uniswapContractAddressHash)
 
-	// check constant hashes
+	// check constant hashes, generate proofs
+	const reserveTimestampSlotProof = await rpc.getProof(uniswapContract.address, [8n], block.number!)
+	const accountNodesRlp = rlpEncode(reserveTimestampSlotProof.accountProof.map(rlpDecode))
 	const constantReserveTimestampSlotHash = await uniswapOracleContract.reserveTimestampSlotHash_()
+	const reserveTimestampSlotStorageNodesRlp = rlpEncode(reserveTimestampSlotProof.storageProof[0].proof.map(x => rlpDecode(x)))
 	expect(constantReserveTimestampSlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(8n, 256)))
 
+	const price0SlotProof = await rpc.getProof(uniswapContract.address, [9n], block.number!)
 	const constantPrice0SlotHash = await uniswapOracleContract.price0SlotHash_()
+	const price0SlotStorageNodesRlp = rlpEncode(price0SlotProof.storageProof[0].proof.map(x => rlpDecode(x)))
 	expect(constantPrice0SlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(9n, 256)))
+
+	const price = await uniswapOracleContract.getPrice_(rlpBlock, accountNodesRlp, reserveTimestampSlotStorageNodesRlp, price0SlotStorageNodesRlp)
+	console.log({price})
 })
 
 jasmine.execute()

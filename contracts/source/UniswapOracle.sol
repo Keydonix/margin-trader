@@ -9,7 +9,7 @@ import { UQ112x112 } from "./UQ112x112.sol";
 contract UniswapOracle {
 	using UQ112x112 for uint224;
 
-	uint256 private constant MIN_BLOCK_COUNT = 192;
+	uint256 private constant MIN_BLOCK_COUNT = 1;
 	bytes32 public constant reserveTimestampSlotHash = keccak256(abi.encodePacked(uint256(8)));
 	bytes32 public constant price0SlotHash = keccak256(abi.encodePacked(uint256(9)));
 
@@ -37,11 +37,11 @@ contract UniswapOracle {
 		(uint256 blockTimestamp, uint256 price0CumulativeLast, uint112 reserve0, uint112 reserve1, uint256 reserveTimestamp) {
 		bytes32 storageRootHash;
 		(storageRootHash, blockTimestamp) = getAccountStorageRoot(historicBlock, accountNodesRlp);
-		price0CumulativeLast = bytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, reserveTimestampSlotHash, reserveTimestampProofNodesRlp));
-		uint256 reserve0Reserve1TimestampPacked = bytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, price0SlotHash, price0ProofNodesRlp));
-		reserve0 = uint112(reserve0Reserve1TimestampPacked >> (112+32));
-		reserve1 = uint112((reserve0Reserve1TimestampPacked >> 32) & (2 ** 112 - 1));
-		reserveTimestamp = reserve0Reserve1TimestampPacked & (2 ** 32 - 1);
+		price0CumulativeLast = rlpBytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, price0SlotHash, price0ProofNodesRlp));
+		uint256 reserve0Reserve1TimestampPacked = rlpBytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, reserveTimestampSlotHash, reserveTimestampProofNodesRlp));
+		reserveTimestamp = reserve0Reserve1TimestampPacked >> (112 + 112);
+		reserve1 = uint112((reserve0Reserve1TimestampPacked >> 112) & (2**112 - 1));
+		reserve0 = uint112(reserve0Reserve1TimestampPacked & (2**112 - 1));
 	}
 
 	function getPrice(bytes memory historicBlock, bytes memory accountNodesRlp, bytes memory reserveTimestampProofNodesRlp, bytes memory price0ProofNodesRlp) public view returns (uint256 price){
@@ -55,7 +55,7 @@ contract UniswapOracle {
 		return (getCurrentPrice0CumulativeLast() - historicPrice0CumulativeLast) / secondsBetweenProvidedBlockAndNow;
 	}
 
-	function getCurrentPrice0CumulativeLast() internal view returns (uint256 price0CumulativeLast) {
+	function getCurrentPrice0CumulativeLast() public view returns (uint256 price0CumulativeLast) {
 		(uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
 		price0CumulativeLast = uniswapV2Pair.price0CumulativeLast();
 		uint256 timeElapsed = block.timestamp - blockTimestampLast;
@@ -64,9 +64,10 @@ contract UniswapOracle {
 		}
 	}
 
-	function bytesToUint256(bytes memory source) internal pure returns (uint256 result) {
+	function rlpBytesToUint256(bytes memory source) internal pure returns (uint256 result) {
+		// an extra nibble is in there for the rlp encoding
 		assembly {
-			result := mload(add(source, 32))
+			result := mload(add(source, 33))
 		}
 	}
 }
