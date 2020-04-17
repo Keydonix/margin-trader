@@ -5,6 +5,7 @@ jasmine.randomizeTests(false)
 import { Crypto } from '@peculiar/webcrypto'
 (global as any).crypto = new Crypto()
 
+import fetch from 'node-fetch'
 import { Bytes, Block } from '@zoltu/ethereum-types'
 import { rlpEncode, rlpDecode } from '@zoltu/rlp-encoder'
 import { keccak256 } from '@zoltu/ethereum-crypto'
@@ -178,6 +179,22 @@ it('UniswapOracle on-chain hashes', async () => {
 	console.log({price})
 })
 
+it('timestamp', async () => {
+	const rpc = await createMemoryRpc(jsonRpcEndpoint, gasPrice)
+	const selfAddress = await rpc.addressProvider()
+	const latestBlockTimestamp = (await rpc.getBlockByNumber(false, 'latest'))!.timestamp.getTime() / 1000
+
+	await fetch(`http://localhost:12340/${latestBlockTimestamp + 10}`)
+	await rpc.sendEth(selfAddress, 0n)
+	const firstBlock = await rpc.getBlockByNumber(false, 'latest')
+	expect(firstBlock!.timestamp).toEqual(new Date((latestBlockTimestamp + 10) * 1000))
+
+	await fetch(`http://localhost:12340/${latestBlockTimestamp + 100}`)
+	await rpc.sendEth(selfAddress, 0n)
+	const secondBlock = await rpc.getBlockByNumber(false, 'latest')
+	expect(secondBlock!.timestamp.getTime()).toEqual((latestBlockTimestamp + 100) * 1000)
+})
+
 jasmine.execute()
 
 function rlpEncodeBlock(block: Block) {
@@ -195,8 +212,8 @@ function rlpEncodeBlock(block: Block) {
 		stripLeadingZeros(Bytes.fromUnsignedInteger(block.gasUsed, 256)),
 		stripLeadingZeros(Bytes.fromUnsignedInteger(block.timestamp.getTime() / 1000, 256)),
 		stripLeadingZeros(block.extraData),
-		Bytes.fromUnsignedInteger(block.mixHash, 256),
-		Bytes.fromUnsignedInteger(block.nonce!, 64),
+		...(block.mixHash !== null ? [Bytes.fromUnsignedInteger(block.mixHash, 256)] : []),
+		...(block.nonce !== null ? [Bytes.fromUnsignedInteger(block.nonce!, 64)] : []),
 	])
 }
 
