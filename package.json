@@ -28,8 +28,8 @@
 	"dependencies": {
 		"@zoltu/ethereum-abi-encoder": "4.0.0",
 		"@zoltu/ethereum-crypto": "2.1.1",
-		"@zoltu/ethereum-fetch-json-rpc": "12.2.1",
-		"@zoltu/ethereum-types": "8.4.1",
+		"@zoltu/ethereum-fetch-json-rpc": "12.2.2",
+		"@zoltu/ethereum-types": "8.4.2",
 		"es-module-shims": "0.4.6",
 		"react": "16.12.0",
 		"react-dom": "16.12.0"
