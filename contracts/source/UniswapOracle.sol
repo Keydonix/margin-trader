@@ -1,7 +1,7 @@
 pragma solidity 0.6.3;
 
 import { BlockVerifier } from "./BlockVerifier.sol";
-import { MerklePatritiaVerifier } from "./MerklePatritiaVerifier.sol";
+import { MerklePatriciaVerifier } from "./MerklePatriciaVerifier.sol";
 import { Rlp } from "./Rlp.sol";
 import { IUniswapV2Pair } from "./IUniswapV2Pair.sol";
 import { UQ112x112 } from "./UQ112x112.sol";
@@ -27,7 +27,7 @@ contract UniswapOracle {
 		uint256 blockNumber;
 		(stateRoot, blockTimestamp, blockNumber) = BlockVerifier.extractStateRootAndTimestamp(historicBlock);
 		require (blockNumber < block.number - MIN_BLOCK_COUNT, "Proof does not cover enough blocks");
-		bytes memory accountDetailsBytes = MerklePatritiaVerifier.getValueFromProof(stateRoot, uniswapV2PairHash, accountNodesRlp);
+		bytes memory accountDetailsBytes = MerklePatriciaVerifier.getValueFromProof(stateRoot, uniswapV2PairHash, accountNodesRlp);
 		Rlp.Item[] memory accountDetails = Rlp.toList(Rlp.toItem(accountDetailsBytes));
 		return (Rlp.toBytes32(accountDetails[2]), blockTimestamp);
 	}
@@ -37,8 +37,8 @@ contract UniswapOracle {
 		(uint256 blockTimestamp, uint256 price0CumulativeLast, uint112 reserve0, uint112 reserve1, uint256 reserveTimestamp) {
 		bytes32 storageRootHash;
 		(storageRootHash, blockTimestamp) = getAccountStorageRoot(historicBlock, accountNodesRlp);
-		price0CumulativeLast = rlpBytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, price0SlotHash, price0ProofNodesRlp));
-		uint256 reserve0Reserve1TimestampPacked = rlpBytesToUint256(MerklePatritiaVerifier.getValueFromProof(storageRootHash, reserveTimestampSlotHash, reserveTimestampProofNodesRlp));
+		price0CumulativeLast = rlpBytesToUint256(MerklePatriciaVerifier.getValueFromProof(storageRootHash, price0SlotHash, price0ProofNodesRlp));
+		uint256 reserve0Reserve1TimestampPacked = rlpBytesToUint256(MerklePatriciaVerifier.getValueFromProof(storageRootHash, reserveTimestampSlotHash, reserveTimestampProofNodesRlp));
 		reserveTimestamp = reserve0Reserve1TimestampPacked >> (112 + 112);
 		reserve1 = uint112((reserve0Reserve1TimestampPacked >> 112) & (2**112 - 1));
 		reserve0 = uint112(reserve0Reserve1TimestampPacked & (2**112 - 1));

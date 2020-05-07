@@ -67,7 +67,7 @@ it('account proof', async () => {
 	expect(Bytes.fromByteArray(leafProofValue[3] as Uint8Array).toUnsignedBigint()).toEqual(proof.codeHash)
 
 	// extract the account proof data with solidity
-	const accountDetailsRlp = await testContract.extractMerklePatritiaLeaf_(block!.stateRoot, path, encodedNodes)
+	const accountDetailsRlp = await testContract.extractMerklePatriciaLeaf_(block!.stateRoot, path, encodedNodes)
 	const accountDetails = (rlpDecode(accountDetailsRlp) as Uint8Array[]).map(x => Bytes.fromByteArray(x as Uint8Array).toUnsignedBigint())
 	expect(accountDetails[0]).toEqual(proof.nonce)
 	expect(accountDetails[1]).toEqual(proof.balance)
@@ -107,7 +107,7 @@ it('storage proof', async () => {
 	expect(leafNodeValue).toEqual(expectedValue)
 
 	// extract the leaf node in Solidity
-	const storedDataRlp = await testContract.extractMerklePatritiaLeaf_(storageHash, path, encodedNodes)
+	const storedDataRlp = await testContract.extractMerklePatriciaLeaf_(storageHash, path, encodedNodes)
 	const storedData = Bytes.fromByteArray(rlpDecode(storedDataRlp) as Uint8Array)
 	expect(storedData.toUnsignedBigint()).toEqual(expectedValue)
 })

@@ -2,13 +2,13 @@ pragma solidity 0.6.3;
 
 import { Rlp } from "./Rlp.sol";
 
-library MerklePatritiaVerifier {
+library MerklePatriciaVerifier {
 	/*
 	 * @dev Extracts the value from a merkle proof
 	 * @param expectedRoot The expected hash of the root node of the trie.
 	 * @param path The path in the trie leading to value.
 	 * @param proofNodesRlp RLP encoded array of proof nodes.
-	 * @return The value proven to exist in the merkle patritia tree whose root is `expectedRoot` at the path `path`
+	 * @return The value proven to exist in the merkle patricia tree whose root is `expectedRoot` at the path `path`
 	 */
 	function getValueFromProof(bytes32 expectedRoot, bytes32 path, bytes memory proofNodesRlp) internal pure returns (bytes memory) {
 		Rlp.Item memory rlpParentNodes = Rlp.toItem(proofNodesRlp);
