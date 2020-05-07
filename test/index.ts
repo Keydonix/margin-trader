@@ -175,8 +175,9 @@ it('UniswapOracle on-chain hashes', async () => {
 	const price0SlotStorageNodesRlp = rlpEncode(price0SlotProof.storageProof[0].proof.map(x => rlpDecode(x)))
 	expect(constantPrice0SlotHash).toEqual(await keccak256.hash(Bytes.fromUnsignedInteger(9n, 256)))
 
+	const rawStorageValue = (await rpc.getStorageAt(uniswapContract.address, 9n)).toUnsignedBigint()
 	const price = await uniswapOracleContract.getPrice_(rlpBlock, accountNodesRlp, reserveTimestampSlotStorageNodesRlp, price0SlotStorageNodesRlp)
-	console.log({price})
+	expect(price).toEqual(rawStorageValue)
 })
 
 it('timestamp', async () => {
