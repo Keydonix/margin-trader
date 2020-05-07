@@ -48,9 +48,10 @@ contract UniswapOracle {
 		(uint256 historicBlockTimestamp, uint256 historicPrice0CumulativeLast, uint112 reserve0, uint112 reserve1, uint256 reserveTimestamp) = verifyBlockAndExtractReserveData(historicBlock, accountNodesRlp, reserveTimestampProofNodesRlp, price0ProofNodesRlp);
 		uint256 secondsBetweenReserveUpdateAndHistoricBlock = historicBlockTimestamp - reserveTimestamp;
 		// bring old record up-to-date, in case there was no cumulative update in provided historic block itself
-		if (secondsBetweenReserveUpdateAndHistoricBlock > 0) {
-			historicPrice0CumulativeLast += uint(UQ112x112.encode(reserve1).uqdiv(reserve0)) * secondsBetweenReserveUpdateAndHistoricBlock;
+		if (secondsBetweenReserveUpdateAndHistoricBlock == 0) {
+			return historicPrice0CumulativeLast;
 		}
+		historicPrice0CumulativeLast += uint(UQ112x112.encode(reserve1).uqdiv(reserve0)) * secondsBetweenReserveUpdateAndHistoricBlock;
 		uint256 secondsBetweenProvidedBlockAndNow = block.timestamp - historicBlockTimestamp;
 		return (getCurrentPrice0CumulativeLast() - historicPrice0CumulativeLast) / secondsBetweenProvidedBlockAndNow;
 	}
@@ -65,9 +66,6 @@ contract UniswapOracle {
 	}
 
 	function rlpBytesToUint256(bytes memory source) internal pure returns (uint256 result) {
-		// an extra byte is in there for the rlp encoding
-		assembly {
-			result := mload(add(source, 33))
-		}
+		return Rlp.toUint(Rlp.toItem(source));
 	}
 }
