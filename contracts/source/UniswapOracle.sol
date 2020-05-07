@@ -65,13 +65,6 @@ contract UniswapOracle {
 	}
 
 	function rlpBytesToUint256(bytes memory source) internal pure returns (uint256 result) {
-		// an extra byte is in there for the rlp encoding
-		assembly {
-			let lenInBytes := sub(byte(0, mload(add(source, 32))), 0x80)
-			result := shr(
-				sub(256, mul(lenInBytes, 8)),
-				mload(add(source, 33))
-			)
-		}
+		return Rlp.toUint(Rlp.toItem(source));
 	}
 }
